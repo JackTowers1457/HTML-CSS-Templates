@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Footer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            background-color: #222;
+            color: white;
+            padding: 20px;
+        }
+        .footer-left, .footer-right {
+            width: 48%;
+        }
+        .footer-left {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .contact-info {
+            font-size: 14px;
+        }
+        .map-container {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        .map img {
+            width: 150px;
+            height: auto;
+            border-radius: 5px;
+        }
+        .location-description {
+            font-size: 14px;
+            max-width: 50%;
+        }
+        .copyright {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+        .accessibility {
+            background-color: #333;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .accessibility h3 {
+            margin-top: 0;
+        }
+        .accessibility ul {
+            list-style: none;
+            padding: 0;
+        }
+        .accessibility li {
+            padding: 5px 0;
+            cursor: pointer;
+        }
+        .accessibility li:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <footer class="footer">
+        <div class="footer-left">
+            <div class="contact-info">
+                <strong>Contact Us</strong><br>
+                Email: contact@company.com<br>
+                Phone: (123) 456-7890<br>
+                Address: 123 Business St, City, Country
+            </div>
+            <div class="map-container">
+                <div class="map">
+                    <img src="OIP.jpeg" alt="Company Map">
+                </div>
+                <div class="location-description">
+                    Our office is located in the heart of the business district,  
+                    easily accessible via public transport and major highways.
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; 2025 Company Name. All Rights Reserved.
+            </div>
+        </div>
+
+        <div class="footer-right">
+            <div class="accessibility">
+                <h3>Accessibility Settings</h3>
+                <ul>
+                    <li>Increase Text Size</li>
+                    <li>Decrease Text Size</li>
+                    <li>High Contrast Mode</li>
+                    <li>Screen Reader Support</li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
