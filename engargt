@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Household Energy Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            padding: 20px;
+            margin: 0;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+        }
+        .section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        .section.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h2 {
+            margin-top: 0;
+            color: #333;
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            color: #555;
+        }
+        input[type="number"] {
+            width: calc(100% - 16px);
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        button {
+            padding: 12px 24px;
+            border: none;
+            background: #2196F3;
+            color: #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background: #1976D2;
+        }
+        button:disabled {
+            background: #ddd;
+            cursor: default;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f8ff;
+            border-radius: 8px;
+            text-align: left;
+            border: 1px solid #e1f5fe;
+        }
+        .progress-container {
+            width: 100%;
+            background-color: #eee;
+            margin-bottom: 10px;
+            border-radius: 8px;
+        }
+        .progress-bar {
+            width: 0%;
+            height: 20px;
+            background-color: #2196F3;
+            border-radius: 8px;
+        }
+        .fun-fact {
+            background-color: #e0f7fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+            border: 1px solid #b2ebf2;
+        }
+        .solar-offer {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            text-align: center;
+            color: #155724;
+        }
+        .solar-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        .solar-button:hover {
+            background-color: #45a049;
+        }
+        @media (max-width: 600px) {
+            .container {
+                margin: 10px;
+                padding: 15px;
+            }
+            button {
+                padding: 10px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <form id="calculatorForm">
+            <div class="section active" data-index="0">
+                <h2>Home Energy 🏠</h2>
+                <label for="electricity">Electricity used this month (in kWh, check your bill):</label>
+                <input type="number" id="electricity" name="electricity" placeholder="Enter kWh used" required />
+
+                <label for="gas">Gas used this month (in cubic meters, check your bill):</label>
+                <input type="number" id="gas" name="gas" placeholder="Enter cubic meters used" required />
+            </div>
+
+            <div class="section" data-index="1">
+                <h2>Getting Around 🚗</h2>
+                <label for="miles_car">Miles you drive each month:</label>
+                <input type="number" id="miles_car" name="miles_car" placeholder="Enter miles driven" required />
+
+                <label for="public_transport">Hours you spend on public transport each month (buses, trains, etc.):</label>
+                <input type="number" id="public_transport" name="public_transport" placeholder="Enter hours of travel" required />
+            </div>
+
+            <div class="section" data-index="2">
+                <h2>Using Appliances 💡</h2>
+                <label for="ac_hours">Hours you use air conditioning on an average day:</label>
+                <input type="number" id="ac_hours" name="ac_hours" placeholder="Enter daily AC hours" required />
+
+                <label for="computer_hours">Hours you use a computer on an average day:</label>
+                <input type="number" id="computer_hours" name="computer_hours" placeholder="Enter daily computer hours" required />
+            </div>
+
+            <div class="navigation">
+                <button type="button" id="prevBtn" disabled>Previous</button>
+                <button type="button" id="nextBtn">Next</button>
+            </div>
+            <div class="navigation" style="margin-top:10px;">
+                <button type="submit" id="submitBtn" style="flex:1; display:none;">Calculate Energy Use & Cost</button>
+                <button type="button" id="resetBtn" style="flex:1;">Reset</button>
+            </div>
+        </form>
+
+        <div class="result" id="result"></div>
+        <div class="solar-offer" id="solarOffer" style="display:none;">
+            <h3>Considering Solar Panels?</h3>
+            <p>Switching to solar panels could reduce your electricity costs by an estimated 50%!</p>
+            <button class="solar-button">Learn More About Solar Panels</button>
+        </div>
+        <button id="saveResults" style="display:none; margin-top: 10px;">Save Results</button>
+        <div class="fun-fact" style="display:none;" id="funFact"></div>
+    </div>
+
+    <script>
+        const sections = document.querySelectorAll('.section');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const submitBtn = document.getElementById('submitBtn');
+        const saveResultsBtn = document.getElementById('saveResults');
+        const progressBar = document.getElementById('progressBar');
+        const funFactDiv = document.getElementById('funFact');
+        const resetBtn = document.getElementById('resetBtn');
+        const solarOfferDiv = document.getElementById('solarOffer');
+        let currentSection = 0;
+
+        function showSection(index) {
+            sections.forEach((section, i) => {
+                section.classList.toggle('active', i === index);
+            });
+            prevBtn.disabled = index === 0;
+            if (index === sections.length - 1) {
+                nextBtn.style.display = 'none';
+                submitBtn.style.display = 'block';
+            } else {
+                nextBtn.style.display = 'inline-block';
+                submitBtn.style.display = 'none';
+            }
+            updateProgressBar(index);
+        }
+
+        function updateProgressBar(index) {
+            const progress = (index / (sections.length - 1)) * 100;
+            progressBar.style.width = progress + '%';
+        }
+
+        prevBtn.addEventListener('click', () => {
+            if (currentSection > 0) {
+                currentSection--;
+                showSection(currentSection);
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentSection < sections.length - 1) {
+                currentSection++;
+                showSection(currentSection);
+            }
+        });
+
+        document.getElementById('calculatorForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // Get input values
+            const electricityUsage = parseFloat(document.getElementById('electricity').value) || 0;
+            const gasUsageCubicMeters = parseFloat(document.getElementById('gas').value) || 0;
+            const milesCar = parseFloat(document.getElementById('miles_car').value) || 0;
+            const publicTransportHours = parseFloat(document.getElementById('public_transport').value) || 0;
+            const acHours = parseFloat(document.getElementById('ac_hours').value) || 0;
+            const computerHours = parseFloat(document.getElementById('computer_hours').value) || 0;
+
+            // Average UK energy prices (as of April 1st, 2025) - these can fluctuate
+            const electricityPricePerKWh = 0.2703; // £ per kWh (27.03 pence)
+            const gasPricePerCubicMeter = 0.0769; // £ per cubic meter (Average 6.99p/kWh, 1 cubic meter ≈ 11.5 kWh, so 6.99 / 11.5)
+            const standingChargeElectricityPerDay = 0.5380; // £ per day (53.80 pence)
+            const standingChargeGasPerDay = 0.3267; // £ per day (32.67 pence)
+            const daysInMonth = 30; // Approximation
+
+            // Energy consumption factors (examples, can vary)
+            const carFuelEnergyPerMile = 0.10; // kWh per mile (estimate, depends on car)
+            const publicTransportEnergyPerHour = 5; // kWh per hour (estimate, varies by transport type)
+            const acEnergyPerHour = 1.5; // kWh per hour (estimate)
+            const computerEnergyPerHour = 0.1; // kWh per hour (estimate)
+
+            // Calculate energy usage
+            const homeElectricityUsage = electricityUsage;
+            const homeGasUsageKWh = gasUsageCubicMeters * 11.5; // Convert cubic meters to kWh
+            const transportationEnergyUsage = (milesCar * carFuelEnergyPerMile) + (publicTransportHours * publicTransportEnergyPerHour);
+            const applianceEnergyUsage = (acHours * acEnergyPerHour * daysInMonth) + (computerHours * computerEnergyPerHour * daysInMonth);
+
+            const totalMonthlyEnergyUsageKWh = homeElectricityUsage + homeGasUsageKWh + transportationEnergyUsage + applianceEnergyUsage;
+
+            // Calculate estimated cost
+            const electricityCost = (electricityUsage * electricityPricePerKWh) + (standingChargeElectricityPerDay * daysInMonth);
+            const gasCost = (gasUsageCubicMeters * gasPricePerCubicMeter * 11.5) + (standingChargeGasPerDay * daysInMonth); // Using price per kWh here for simplicity
+            const estimatedMonthlyCost = electricityCost + gasCost;
+            const potentialSolarSavings = electricityCost * 0.5;
+            const estimatedCostWithSolar = estimatedMonthlyCost - potentialSolarSavings;
+
+            const resultText = `
+                <h2>Estimated Monthly Energy Use & Cost:</h2>
+                <h3>Energy Usage (kWh):</h3>
+                <p><strong>Home Electricity:</strong> ${homeElectricityUsage.toFixed(2)} kWh</p>
+                <p><strong>Home Gas (equivalent):</strong> ${homeGasUsageKWh.toFixed(2)} kWh</p>
+                <p><strong>Transportation:</strong> ${transportationEnergyUsage.toFixed(2)} kWh</p>
+                <p><strong>Appliances:</strong> ${applianceEnergyUsage.toFixed(2)} kWh</p>
+                <p><strong>Total Estimated Monthly Energy Use:</strong> ${totalMonthlyEnergyUsageKWh.toFixed(2)} kWh</p>
+                <h3>Estimated Costs (£):</h3>
+                <p><strong>Electricity Cost:</strong> ${electricityCost.toFixed(2)} £</p>
+                <p><strong>Gas Cost:</strong> ${gasCost.toFixed(2)} £</p>
+                <p><strong>Estimated Total Monthly Cost:</strong> ${estimatedMonthlyCost.toFixed(2)} £</p>
+                ${electricityUsage > 0 ? `<p><strong>Potential Savings with Solar (estimated 50% of electricity cost):</strong> ${potentialSolarSavings.toFixed(2)} £</p>` : ''}
+                ${electricityUsage > 0 ? `<p><strong>Estimated Total Monthly Cost with Solar:</strong> ${estimatedCostWithSolar.toFixed(2)} £</p>` : ''}
+                <p>💰</p>
+                <p><small>*Please note these costs are estimates based on average UK prices as of April 1st, 2025, and your actual bill may vary. Solar savings are an estimate and depend on system size and usage.</small></p>
+            `;
+
+            document.getElementById('result').innerHTML = resultText;
+            saveResultsBtn.style.display = "block";
+            funFactDiv.style.display = "block";
+            funFactDiv.textContent = "Fun Fact: Reducing your thermostat by just 1 degree Celsius can save around 10% on your heating bill!";
+            if (electricityUsage > 0) {
+                solarOfferDiv.style.display = "block";
+            } else {
+                solarOfferDiv.style.display = "none";
+            }
+        });
+
+        saveResultsBtn.addEventListener('click', function(){
+            const resultText = document.getElementById('result').innerText;
+            const blob = new Blob([resultText], { type: "text/plain;charset=utf-8" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "energy_usage_cost_results.txt";
+            link.click();
+        });
+
+        resetBtn.addEventListener('click', () => {
+            document.getElementById('calculatorForm').reset();
+            currentSection = 0;
+            showSection(currentSection);
+            document.getElementById('result').innerHTML = '';
+            saveResultsBtn.style.display = 'none';
+            funFactDiv.style.display = 'none';
+            solarOfferDiv.style.display = 'none';
+            updateProgressBar(0);
+        });
+
+        updateProgressBar(0);
+    </script>
+</body>
+</html>
