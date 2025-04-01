@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Carbon Footprint Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            padding: 20px;
+            margin: 0;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+        }
+        .section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        .section.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h2 {
+            margin-top: 0;
+            color: #333;
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            color: #555;
+        }
+        input[type="number"] {
+            width: calc(100% - 16px);
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        button {
+            padding: 12px 24px;
+            border: none;
+            background: #4CAF50;
+            color: #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #ddd;
+            cursor: default;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f8ff;
+            border-radius: 8px;
+            text-align: left;
+            border: 1px solid #e1f5fe;
+        }
+        .progress-container {
+            width: 100%;
+            background-color: #eee;
+            margin-bottom: 10px;
+            border-radius: 8px;
+        }
+        .progress-bar {
+            width: 0%;
+            height: 20px;
+            background-color: #2196F3;
+            border-radius: 8px;
+        }
+        .fun-fact {
+            background-color: #e0f7fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+            border: 1px solid #b2ebf2;
+        }
+        @media (max-width: 600px) {
+            .container {
+                margin: 10px;
+                padding: 15px;
+            }
+            button {
+                padding: 10px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <form id="calculatorForm">
+            <div class="section active" data-index="0">
+                <h2>Basics 💡</h2>
+                <label for="electricity">Monthly Electricity Usage (kWh):</label>
+                <input type="number" id="electricity" name="electricity" placeholder="Enter your monthly electricity usage" required />
+
+                <label for="gas">Monthly Gas Usage (therms):</label>
+                <input type="number" id="gas" name="gas" placeholder="Enter your monthly gas usage" required />
+            </div>
+
+            <div class="section" data-index="1">
+                <h2>Transport 🚗</h2>
+                <label for="miles">Monthly Miles Driven:</label>
+                <input type="number" id="miles" name="miles" placeholder="Enter your monthly miles driven" required />
+
+                <label for="flights">Annual Flights (number of flights):</label>
+                <input type="number" id="flights" name="flights" placeholder="Enter number of flights per year" required />
+            </div>
+
+            <div class="section" data-index="2">
+                <h2>Food 🍽️</h2>
+                <label for="meat">Weekly Meat Consumption (servings):</label>
+                <input type="number" id="meat" name="meat" placeholder="Enter servings per week" required />
+
+                <label for="dairy">Weekly Dairy Consumption (servings):</label>
+                <input type="number" id="dairy" name="dairy" placeholder="Enter servings per week" required />
+            </div>
+
+            <div class="navigation">
+                <button type="button" id="prevBtn" disabled>Previous</button>
+                <button type="button" id="nextBtn">Next</button>
+            </div>
+            <div class="navigation" style="margin-top:10px;">
+                <button type="submit" id="submitBtn" style="flex:1; display:none;">Calculate Footprint</button>
+                <button type="button" id="resetBtn" style="flex:1;">Reset</button>
+            </div>
+        </form>
+
+        <div class="result" id="result"></div>
+        <button id="saveResults" style="display:none; margin-top: 10px;">Save Results</button>
+        <div class="fun-fact" style="display:none;" id="funFact"></div>
+    </div>
+
+    <script>
+        const sections = document.querySelectorAll('.section');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const submitBtn = document.getElementById('submitBtn');
+        const saveResultsBtn = document.getElementById('saveResults');
+        const progressBar = document.getElementById('progressBar');
+        const funFactDiv = document.getElementById('funFact');
+        const resetBtn = document.getElementById('resetBtn');
+        let currentSection = 0;
+
+        function showSection(index) {
+            sections.forEach((section, i) => {
+                section.classList.toggle('active', i === index);
+            });
+            prevBtn.disabled = index === 0;
+            if (index === sections.length - 1) {
+                nextBtn.style.display = 'none';
+                submitBtn.style.display = 'block';
+            } else {
+                nextBtn.style.display = 'inline-block';
+                submitBtn.style.display = 'none';
+            }
+            updateProgressBar(index);
+        }
+
+        function updateProgressBar(index) {
+            const progress = (index / (sections.length - 1)) * 100;
+            progressBar.style.width = progress + '%';
+        }
+
+        prevBtn.addEventListener('click', () => {
+            if (currentSection > 0) {
+                currentSection--;
+                showSection(currentSection);
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentSection < sections.length - 1) {
+                currentSection++;
+                showSection(currentSection);
+            }
+        });
+
+        document.getElementById('calculatorForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const electricity = parseFloat(document.getElementById('electricity').value);
+            const gas = parseFloat(document.getElementById('gas').value);
+            const miles = parseFloat(document.getElementById('miles').value);
+            const flights = parseFloat(document.getElementById('flights').value);
+            const meat = parseFloat(document.getElementById('meat').value);
+            const dairy = parseFloat(document.getElementById('dairy').value);
+
+            const electricityFactor = 0.92;
+            const gasFactor = 5.3;
+            const milesFactor = 0.21;
+            const flightFactor = 250;
+            const meatFactor = 2.5;
+            const dairyFactor = 1.8;
+
+            const monthlyCO2Basics = (electricity * electricityFactor) + (gas * gasFactor);
+            const annualCO2Basics = monthlyCO2Basics * 12;
+            const monthlyTransport = miles * milesFactor;
+            const annualTransport = (monthlyTransport * 12) + (flights * flightFactor);
+            const weeklyFood = (meat * meatFactor) + (dairy * dairyFactor);
+            const annualFood = weeklyFood * 52;
+            const totalAnnualCO2 = annualCO2Basics + annualTransport + annualFood;
+
+            const resultText = `
+                <h2>Carbon Footprint Breakdown:</h2>
+                <p><strong>Basics (Annual):</strong> ${annualCO2Basics.toFixed(2)} kg CO2</p>
+                <p>   - Electricity: ${(electricity * electricityFactor * 12).toFixed(2)} kg CO2</p>
+                <p>   - Gas: ${(gas * gasFactor * 12).toFixed(2)} kg CO2</p>
+                <p><strong>Transport (Annual):</strong> ${annualTransport.toFixed(2)} kg CO2</p>
+                <p>   - Driving: ${(miles * milesFactor * 12).toFixed(2)} kg CO2</p>
+                <p>   - Flights: ${(flights * flightFactor).toFixed(2)} kg CO2</p>
+                <p><strong>Food (Annual):</strong> ${annualFood.toFixed(2)} kg CO2</p>
+                <p>   - Meat: ${(meat * meatFactor * 52).toFixed(2)} kg CO2</p>
+                <p>   - Dairy: ${(dairy * dairyFactor * 52).toFixed(2)} kg CO2</p>
+                <p><strong>Total Annual Carbon Footprint:</strong> ${totalAnnualCO2.toFixed(2)} kg CO2</p>
+                <p>😊</p>
+            `;
+
+            document.getElementById('result').innerHTML = resultText;
+            saveResultsBtn.style.display = "block";
+            funFactDiv.style.display = "block";
+            funFactDiv.textContent = "Fun Fact: Planting trees helps absorb CO2!";
+        });
+
+        saveResultsBtn.addEventListener('click', function(){
+            const resultText = document.getElementById('result').innerText;
+            const blob = new Blob([resultText], { type: "text/plain;charset=utf-8" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "carbon_footprint_results.txt";
+            link.click();
+        });
+
+        resetBtn.addEventListener('click', () => {
+            document.getElementById('calculatorForm').reset();
+            currentSection = 0;
+            showSection(currentSection);
+            document.getElementById('result').innerHTML = '';
+            saveResultsBtn.style.display = 'none';
+            funFactDiv.style.display = 'none';
+            updateProgressBar(0);
+        });
+
+        updateProgressBar(0);
+    </script>
+</body>
+</html>
